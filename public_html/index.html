@@ -1,0 +1,60 @@
+<html>
+    <head>
+        <title>Network Difficulty Hashrate Graphing Tool</title>
+
+        <!-- load jquery in head -->
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+
+        <script type="text/javascript" src="js/jqplot/jquery.jqplot.min.js"></script>
+        <script type="text/javascript" src="js/jqplot/plugins/jqplot.highlighter.min.js"></script>
+        <script type="text/javascript" src="js/jqplot/plugins/jqplot.cursor.min.js"></script>
+        <script type="text/javascript" src="js/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+
+        <script type="text/javascript">
+        function loadGraphData(initailLoad) {
+
+            $.get('ajax/getGraphData.php', function( data ) {
+                var obj = $.parseJSON(data);
+                //alert( "Data Loaded: " + obj.result);
+                var data = [[1,11],[2,21],[3,31]];
+                $diffPlot.reInitialize(data);
+                alert("redraw");
+            });
+        }
+
+        var $diffPlot;
+
+        $(document).ready(function(){
+            loadGraphData(true);
+
+            $diffPlot = $.jqplot('diffPlot',[ [100,300], [100,100] ], {
+                title:'Data Point Highlighting',
+                axes:{
+                    xaxis:{
+
+                        tickOptions:{
+                            formatString:''
+                        }
+                    },
+                    yaxis:{
+                        tickOptions:{
+                            formatString:''
+                        }
+                    }
+                },
+                highlighter: {
+                    show: true,
+                    sizeAdjust: 7.5
+                },
+                cursor: {
+                    show: false
+                }
+            });
+        });
+        </script>
+    </head>
+
+    <body>
+        <div id="diffPlot" style="height:300px; width:500px;"></div>
+    </body>
+</html>
