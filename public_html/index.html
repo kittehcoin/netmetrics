@@ -5,56 +5,103 @@
         <!-- load jquery in head -->
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 
-        <script type="text/javascript" src="js/jqplot/jquery.jqplot.min.js"></script>
-        <script type="text/javascript" src="js/jqplot/plugins/jqplot.highlighter.min.js"></script>
-        <script type="text/javascript" src="js/jqplot/plugins/jqplot.cursor.min.js"></script>
-        <script type="text/javascript" src="js/jqplot/plugins/jqplot.dateAxisRenderer.min.js"></script>
+        <script src="js/Highcharts-3.0.9/js/highcharts.js"></script>
 
         <script type="text/javascript">
-        function loadGraphData(initailLoad) {
+        var diffPlot;
 
+        function loadGraphData(initailLoad) {
             $.get('ajax/getGraphData.php', function( data ) {
                 var obj = $.parseJSON(data);
-                //alert( "Data Loaded: " + obj.result);
-                var data = [[1,11],[2,21],[3,31]];
-                $diffPlot.reInitialize(data);
-                alert("redraw");
+                initGraph(obj[0], obj[1], obj[2], obj[3]);
+
+                setInterval(liveGraphData, 10000);
             });
         }
 
-        var $diffPlot;
+        function liveGraphData() {
+            $.get('ajax/getLiveGraphData.php', function( data ) {
+                var obj = $.parseJSON(data);
+                console.debug(obj);
+                addGraphPoints(obj[0], obj[1], obj[2], obj[3]);
+            });
+        }
 
-        $(document).ready(function(){
-            loadGraphData(true);
+        function addGraphPoints(block, diff, net, time) {
+            var chart = $('#diffPlot').highcharts();
+            chart.series[0].addPoint(block.data[0]);
+            chart.series[1].addPoint(diff.data[0]);
+            chart.series[2].addPoint(net.data[0]);
+        }
 
-            $diffPlot = $.jqplot('diffPlot',[ [100,300], [100,100] ], {
-                title:'Data Point Highlighting',
-                axes:{
-                    xaxis:{
+        function initGraph(blockheight, diff, hash, timestamps) {
+            var a = new Date(timestamps.data[0] * 1000);
+            var utc = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate(), a.getHours(), a.getMinutes(), a.getSeconds());
 
-                        tickOptions:{
-                            formatString:''
+            $('#diffPlot').highcharts({
+                chart: {
+                    type: 'spline'
+                },
+                xAxis: {
+                    type: 'datetime',
+                    maxZoom: 10 * 1000
+                },
+                yAxis: [{
+                    title: {
+                        text: 'Block Height',
+                        style: {
+                            color: '#333333'
                         }
                     },
-                    yaxis:{
-                        tickOptions:{
-                            formatString:''
+                    opposite: true},
+                    {
+                    title: {
+                        text: 'Diff',
+                        style: {
+                            color: '#ff0000'
                         }
                     }
+                    },
+                    {
+                    title: {
+                        text: 'Hash',
+                        style: {
+                            color: '#0000ff'
+                        }
+                    },
+                    opposite: true}],
+                series: [blockheight, diff, hash],
+                tooltip: {
+                    shared: true
                 },
-                highlighter: {
-                    show: true,
-                    sizeAdjust: 7.5
-                },
-                cursor: {
-                    show: false
+                plotOptions: {
+                    spline: {
+                        lineWidth: 4,
+                        states: {
+                            hover: {
+                                lineWidth: 5
+                            }
+                        },
+                        marker: {
+                            enabled: false
+                        },
+                        pointInterval: 60*15*1000, // 15min
+                        pointStart: utc
+                    }
                 }
             });
+        }
+
+
+
+        $(document).ready(function() {
+            loadGraphData(true);
         });
+
         </script>
     </head>
 
     <body>
-        <div id="diffPlot" style="height:300px; width:500px;"></div>
+        <div id="diffPlot"></div>
     </body>
 </html>
