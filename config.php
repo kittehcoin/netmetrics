@@ -14,6 +14,10 @@ define('RPC_PASS', '6W56i7eJg9TiHbdEmDCBhK2Qua2xHwnagx8SWtjFFgHK');
 define('RPC_SERVER', '127.0.0.1');
 define('RPC_PORT', '22565');
 
-define('LOG_INTERVAL', 10); //in seconds
+//interval at which data is captured from getminerinfo() and written to the DB, in SECONDS
+define('SNAPSHOT_INTERVAL', 1);
+
+//interval at which the web interface live-updates via set-interval
+define('LIVEUPDATE_INTERVAL', 10);
 
 ?>

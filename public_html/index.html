@@ -13,9 +13,9 @@
         function loadGraphData(initailLoad) {
             $.get('ajax/getGraphData.php', function( data ) {
                 var obj = $.parseJSON(data);
-                initGraph(obj[0], obj[1], obj[2], obj[3]);
+                initGraph(obj[0], obj[1], obj[2], obj[3], obj[4]);
 
-                setInterval(liveGraphData, 10000);
+                //setInterval(liveGraphData, 10000);
             });
         }
 
@@ -23,7 +23,7 @@
             $.get('ajax/getLiveGraphData.php', function( data ) {
                 var obj = $.parseJSON(data);
                 console.debug(obj);
-                addGraphPoints(obj[0], obj[1], obj[2], obj[3]);
+                addGraphPoints(obj[0], obj[1], obj[2], obj[3], obj[4]);
             });
         }
 
@@ -34,7 +34,7 @@
             chart.series[2].addPoint(net.data[0]);
         }
 
-        function initGraph(blockheight, diff, hash, timestamps) {
+        function initGraph(blockheight, diff, hash, timestamps, blocktimes) {
             var a = new Date(timestamps.data[0] * 1000);
             var utc = Date.UTC(a.getFullYear(), a.getMonth(), a.getDate(), a.getHours(), a.getMinutes(), a.getSeconds());
 
@@ -42,10 +42,12 @@
                 chart: {
                     type: 'spline'
                 },
-                xAxis: {
+                xAxis: [{
                     type: 'datetime',
                     maxZoom: 10 * 1000
-                },
+                },{
+                    type: 'linear'
+                }],
                 yAxis: [{
                     title: {
                         text: 'Block Height',
@@ -60,8 +62,7 @@
                         style: {
                             color: '#ff0000'
                         }
-                    }
-                    },
+                    }},
                     {
                     title: {
                         text: 'Hash',
@@ -69,8 +70,16 @@
                             color: '#0000ff'
                         }
                     },
+                    opposite: true},
+                    {
+                    title: {
+                        text: 'Block Time',
+                        style: {
+                            color: '#000066'
+                        }
+                    },
                     opposite: true}],
-                series: [blockheight, diff, hash],
+                series: [blockheight, diff, hash, blocktimes],
                 tooltip: {
                     shared: true
                 },
