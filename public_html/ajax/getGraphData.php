@@ -2,14 +2,16 @@
 
 require_once '../../config.php';
 
-$monthunix = 60 * 60 * 24 * 30; //60sec * 60min * 24hrs * 30days
-$startTime = isset($_GET['startTime']) ? $_GET['startTime'] : (time() - $monthunix);
-$endTime = isset($_GET['endTime']) ? $_GET['endTime'] : time();
+if(isset($_GET['startBlock']))
+    $startBlock = $_GET['startBlock'];
+
+if(isset($_GET['endBlock']))
+    $endBlock = $_GET['endBlock'];
 
 $db_link = mysql_connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASS);
 mysql_select_db(MYSQL_DB, $db_link);
 
-$query = "SELECT * FROM network_snapshot"; //WHERE timestamp > $startTime AND timestamp < $endTime
+$query = "SELECT * FROM network_snapshot WHERE block > $startBlock AND block < $endBlock";
 $result = mysql_query($query);
 
 if($result) {
