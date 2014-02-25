@@ -11,13 +11,13 @@
         <?php
                 require_once '../config.php';
 
-                $startTime = time() - (60 * 60 * 24 * 2); //2days
+                $startTime = time() - (60 * 60 * 5); //2days
                 $endTime = time();
 
                 $db_link = mysql_connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASS);
                 mysql_select_db(MYSQL_DB, $db_link);
 
-                $query = "SELECT * FROM network_snapshot"; //WHERE timestamp > $startTime AND timestamp < $endTime
+                $query = "SELECT * FROM network_snapshot WHERE timestamp > $startTime AND timestamp < $endTime";
                 $result = mysql_query($query);
 
                 if($result) {
@@ -48,13 +48,13 @@
                     }
 
                     //gather info on block times
-                    $query = "SELECT * FROM block_time";
+                    $query = "SELECT * FROM block_time WHERE starttime > $startTime AND starttime < $endTime";
                     $result = mysql_query($query);
 
                     if($result) {
                         $blockTimeSeries = array("name" => "Block Time",
-                            "xAxis" => 1,
-                            "yAxis" => 3,
+                            "xAxis" => 0,
+                            "yAxis" => 0,
                             "color" => '#000066',
                             "lineWidth" => 2,
                             "data" => array());
@@ -71,7 +71,7 @@
                 $db_link = mysql_connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASS);
                 mysql_select_db(MYSQL_DB, $db_link);
 
-                $query = "SELECT * FROM block_time"; //WHERE timestamp > $startTime AND timestamp < $endTime
+                $query = "SELECT * FROM block_time";
                 $result = mysql_query($query);
 
                 $blocks = array();
@@ -98,8 +98,6 @@
                 xAxis: [{
                     type: 'datetime',
                     maxZoom: 10 * 1000
-                },{
-                    type: 'linear'
                 }],
                 yAxis: [{
                     title: {
@@ -123,16 +121,8 @@
                             color: '#0000ff'
                         }
                     },
-                    opposite: true},
-                    {
-                    title: {
-                        text: 'Block Time',
-                        style: {
-                            color: '#000066'
-                        }
-                    },
                     opposite: true}],
-                series: [<?php echo json_encode($blockHeightSeries); ?>, <?php echo json_encode($diffSeries); ?>, <?php echo json_encode($timeSeries); ?>, <?php echo json_encode($blockTimeSeries); ?>],
+                series: [blockheight, diff, hash],
                 tooltip: {
                     shared: true
                 },
@@ -147,11 +137,48 @@
                         marker: {
                             enabled: false
                         },
-                        pointInterval: 60*15*1000, // 15min
+                        pointInterval: 1000, // 1s
                         pointStart: utc
                     }
                 }
             });
+
+
+        $('#timePlot').highcharts({
+            chart: {
+                type: 'spline'
+            },
+            xAxis: [{
+                type: 'linear'
+            }],
+            yAxis: [{
+                title: {
+                    text: 'Block Time',
+                    style: {
+                        color: '#333333'
+                    }
+                },
+                opposite: true}],
+            series: [blocktimes],
+            tooltip: {
+                shared: true
+            },
+            plotOptions: {
+                spline: {
+                    lineWidth: 4,
+                    states: {
+                        hover: {
+                            lineWidth: 5
+                        }
+                    },
+                    marker: {
+                        enabled: false
+                    },
+                    pointInterval: 1000, // 1s
+                    pointStart: utc
+                }
+            }
+        });
         }
 
 
@@ -159,7 +186,7 @@
         $(document).ready(function() {
            // loadGraphData(true);
 
-            initGraph(<?php echo json_encode($blockHeightSeries); ?>, <?php echo json_encode($diffSeries); ?>, <?php echo json_encode($timeSeries); ?>, <?php echo json_encode($blockTimeSeries); ?>);
+            initGraph(<?php echo json_encode($blockHeightSeries); ?>, <?php echo json_encode($diffSeries); ?>, <?php echo json_encode($hashSeries); ?>, <?php echo json_encode($timeSeries); ?>, <?php echo json_encode($blockTimeSeries); ?>);
 
             $(function() {
                 //find all form with class jqtransform and apply the plugin
@@ -175,7 +202,7 @@
 
         function loadGraphData(startBlock, endBlock) {
             console.log("loadGraphData: " + startBlock + " to " + endBlock);
-            $.get('ajax/getGraphData.php', {startBlock:startBlock, endBlock: endBlock}, function( data ) {
+            $.get('ajax/getGraphData.php', {startBlock: startBlock, endBlock: endBlock}, function( data ) {
                 var obj = $.parseJSON(data);
                 initGraph(obj[0], obj[1], obj[2], obj[3], obj[4]);
 
@@ -203,6 +230,7 @@
 
     <body>
         <div id="diffPlot"></div>
+        <div id="timePlot"></div>
         <div id="controls">
 
 

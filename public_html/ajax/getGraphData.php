@@ -14,6 +14,8 @@ mysql_select_db(MYSQL_DB, $db_link);
 $query = "SELECT * FROM network_snapshot WHERE block > $startBlock AND block < $endBlock";
 $result = mysql_query($query);
 
+error_log("Query:" . $query);
+
 if($result) {
     $blockHeightSeries = array("name" => "Block Height",
                                "yAxis" => 0,
@@ -42,13 +44,13 @@ if($result) {
     }
 
     //gather info on block times
-    $query = "SELECT * FROM block_time";
+    $query = "SELECT * FROM block_time WHERE block > $startBlock AND block < $endBlock";
     $result = mysql_query($query);
 
     if($result) {
         $blockTimeSeries = array("name" => "Block Time",
-            "xAxis" => 1,
-            "yAxis" => 3,
+            "xAxis" => 0,
+            "yAxis" => 0,
             "color" => '#000066',
             "lineWidth" => 2,
             "data" => array());
